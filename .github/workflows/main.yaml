@@ -12,9 +12,126 @@ env:
   PYTHON_VERSION: '3.8'
 
 jobs:
+  arm_template_build_test_deploy:
+    name: 'ARM Templates Build, Test & Deploy'
+
+    runs-on: ubuntu-latest
+
+    env:
+      RESOURCE_PATH: 'solutions/2020-12-21/Resources'
+      DEPLOYMENT_NAME: 'sos'
+
+    steps:
+    - name: Checkout the repo
+      uses: actions/checkout@v2
+
+    - name: Login to Azure
+      uses: Azure/login@v1.1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Run Bicep build
+      uses: aliencube/bicep-build-actions@v0.1
+      with:
+        files: '**/*.bicep'
+
+    - name: Run ARM TTK
+      uses: aliencube/arm-ttk-actions@v0.3
+      id: armtest
+      with:
+        path: ./${{ env.RESOURCE_PATH }}
+
+    - name: Show ARM TTK test result
+      shell: bash
+      continue-on-error: true
+      run: |
+        echo 'Results: ${{ toJSON(fromJSON(steps.armtest.outputs.results)) }}'
+
+    - name: Deploy ARM templates Step 1
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=1 functionAppWorkerRuntime=python functionAppWorkerVersion="3.8"
+
+    - name: Deploy ARM templates Step 2
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=2 functionAppWorkerRuntime=dotnet functionAppWorkerVersion="3.1"
+
+    - name: Deploy ARM templates Step 3
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=3 functionAppWorkerRuntime=python functionAppWorkerVersion="3.8"
+
+    - name: Deploy ARM templates Step 4
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=4 functionAppWorkerRuntime=node functionAppWorkerVersion="~12"
+
+    - name: Deploy ARM templates Step 5
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=5 functionAppWorkerRuntime=dotnet functionAppWorkerVersion="3.1"
+
+    - name: Deploy ARM templates Step 6
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=6 functionAppWorkerRuntime=node functionAppWorkerVersion="~12"
+
+    - name: Deploy ARM templates Step 7
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=7 functionAppWorkerRuntime=dotnet functionAppWorkerVersion="3.1"
+
+    - name: Deploy ARM templates Step 8
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=8 functionAppWorkerRuntime=node functionAppWorkerVersion="~12"
+
+    - name: Deploy ARM templates Step 9
+      uses: Azure/arm-deploy@v1.0.1
+      with:
+        subscriptionId: ${{ secrets.SUBSCRIPTION_ID }}
+        resourceGroupName: ${{ secrets.RESOURCE_GROUP_NAME }}
+        deploymentName: ${{ env.DEPLOYMENT_NAME }}
+        template: '${{ env.RESOURCE_PATH }}/azuredeploy.json'
+        parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=9 functionAppWorkerRuntime=python functionAppWorkerVersion="3.8"
 
   functionapp_build_test_deploy_1:
     name: 'FunctionApp Step 1 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -71,6 +188,8 @@ jobs:
 
   functionapp_build_test_deploy_2:
     name: 'FunctionApp Step 2 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -134,6 +253,8 @@ jobs:
 
   functionapp_build_test_deploy_3:
     name: 'FunctionApp Step 3 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -190,6 +311,8 @@ jobs:
 
   functionapp_build_test_deploy_4:
     name: 'FunctionApp Step 4 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -247,6 +370,8 @@ jobs:
 
   functionapp_build_test_deploy_5:
     name: 'FunctionApp Step 5 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -310,6 +435,8 @@ jobs:
 
   functionapp_build_test_deploy_6:
     name: 'FunctionApp Step 6 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -367,6 +494,8 @@ jobs:
 
   functionapp_build_test_deploy_7:
     name: 'FunctionApp Step 7 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -430,6 +559,8 @@ jobs:
 
   functionapp_build_test_deploy_8:
     name: 'FunctionApp Step 8 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
@@ -487,6 +618,8 @@ jobs:
 
   functionapp_build_test_deploy_9:
     name: 'FunctionApp Step 9 Deploy'
+    needs:
+    - arm_template_build_test_deploy
 
     runs-on: ubuntu-latest
 
