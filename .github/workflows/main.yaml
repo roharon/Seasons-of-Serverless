@@ -84,7 +84,7 @@ jobs:
         parameters: name=${{ secrets.RESOURCE_NAME }} locationCode=${{ secrets.LOCATION_CODE }} functionAppTimezone="${{ secrets.TIMEZONE }}" index=4 functionAppWorkerRuntime=node functionAppWorkerVersion="~12"
 
   arm_template_build_test_deploy_1:
-    name: 'ARM Templates Build, Test & Deploy-2
+    name: 'ARM Templates Build, Test & Deploy-2'
 
     runs-on: ubuntu-latest
 
